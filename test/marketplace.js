@@ -32,7 +32,7 @@ describe("Marketplace contract", function () {
     this.marketplace = this.marketplace.connect(this.account1);
     await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("1"));
     let offer = await this.marketplace.offers(this.dummyNFT.address, 1);
-    expect(offer.isForSale).to.equal(true);
+    expect(offer.isActive).to.equal(true);
     expect(offer.seller).to.equal(this.account1.address);
     expect(offer.price).to.equal(ethers.utils.parseEther("1"));
   });
@@ -42,18 +42,18 @@ describe("Marketplace contract", function () {
     await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("1"));
     await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("2"));
     let offer = await this.marketplace.offers(this.dummyNFT.address, 1);
-    expect(offer.isForSale).to.equal(true);
+    expect(offer.isActive).to.equal(true);
     expect(offer.seller).to.equal(this.account1.address);
     expect(offer.price).to.equal(ethers.utils.parseEther("2"));
   });
 
   it("should revert takeOffer if NFT not for sale", async function () {
     this.marketplace = this.marketplace.connect(this.account1);
-    await expect(this.marketplace.takeOffer(this.dummyNFT.address, 1)).to.be.revertedWith("Token not for sale.");
+    await expect(this.marketplace.takeOffer(this.dummyNFT.address, 1)).to.be.revertedWith("NFT not for sale.");
     // Try the burn address as the ERC721
     await expect(
       this.marketplace.takeOffer(BURN_ADDRESS, 69)
-    ).to.be.revertedWith("Token not for sale.");
+    ).to.be.revertedWith("NFT not for sale.");
   });
 
   it("should revert takeOffer if insufficient payment", async function () {
@@ -93,5 +93,12 @@ describe("Marketplace contract", function () {
     this.marketplace = this.marketplace.connect(this.account2);
     await this.marketplace.takeOffer(this.dummyNFT.address, 1, {value: ethers.utils.parseEther("1")});
     expect(await this.dummyNFT.ownerOf(1)).to.be.equal(this.account2.address);
+  });
+
+  it("should revert makeBid if bidding on your own NFT", async function () {
+    this.marketplace = this.marketplace.connect(this.account1);
+    await expect(
+      this.marketplace.makeBid(this.dummyNFT.address, 1, ethers.utils.parseEther("1"))
+    ).to.be.revertedWith("You cannot bid on your own NFT.");
   });
 });
