@@ -29,6 +29,7 @@ contract Marketplace {
     function takeOffer(address erc721, uint tokenId) public payable {
         Offer storage offer = offers[erc721][tokenId];
         require(offer.isForSale, "Token not for sale.");
+        require(IERC721(erc721).ownerOf(tokenId) == offer.seller, "Seller no longer owns this NFT.");
         require(msg.value >= offer.price, "Insufficient payment.");
         require(offer.seller != msg.sender, "Cannot take your own offer.");
         (bool success, ) = offer.seller.call{value: msg.value}("");
