@@ -32,17 +32,17 @@ describe("Marketplace contract", function () {
     let offer = await this.marketplace.offers(this.dummyNFT.address, 1);
     expect(offer.isForSale).to.equal(true);
     expect(offer.seller).to.equal(this.account1.address);
-    expect(offer.minValue).to.equal(ethers.utils.parseEther("1"));
+    expect(offer.price).to.equal(ethers.utils.parseEther("1"));
   });
 
-  it("should allow you to overwrite buyNow of offer", async function () {
+  it("should allow you to overwrite price of offer", async function () {
     this.marketplace = this.marketplace.connect(this.account1);
     await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("1"));
     await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("2"));
     let offer = await this.marketplace.offers(this.dummyNFT.address, 1);
     expect(offer.isForSale).to.equal(true);
     expect(offer.seller).to.equal(this.account1.address);
-    expect(offer.minValue).to.equal(ethers.utils.parseEther("2"));
+    expect(offer.price).to.equal(ethers.utils.parseEther("2"));
   });
 
   it("should revert takeOffer if NFT not for sale", async function () {
@@ -53,4 +53,28 @@ describe("Marketplace contract", function () {
       this.marketplace.takeOffer("0x000000000000000000000000000000000000dead", 69)
     ).to.be.revertedWith("Token not for sale.");
   });
+
+  it("should revert takeOffer if insufficient payment", async function () {
+    this.marketplace = this.marketplace.connect(this.account1);
+    await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("1"));
+    this.marketplace = this.marketplace.connect(this.account2);
+    await expect(
+      this.marketplace.takeOffer(this.dummyNFT.address, 1, {value: ethers.utils.parseEther("0.99")})
+    ).to.be.revertedWith("Insufficient payment.");
+  });
+
+  it("should revert takeOffer if attempting to take own offer", async function () {
+    this.marketplace = this.marketplace.connect(this.account1);
+    await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("1"));
+    await expect(
+      this.marketplace.takeOffer(this.dummyNFT.address, 1, {value: ethers.utils.parseEther("1")})
+    ).to.be.revertedWith("Cannot take your own offer.");
+  });
+
+  // it("should takeOffer", async function () {
+  //   this.marketplace = this.marketplace.connect(this.account1);
+  //   await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("1"));
+  //   this.marketplace = this.marketplace.connect(this.account2);
+  //   await this.marketplace.takeOffer(this.dummyNFT.address, 1, {value: ethers.utils.parseEther("1")});
+  // });
 });

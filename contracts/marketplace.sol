@@ -7,8 +7,8 @@ import "hardhat/console.sol";
 contract Marketplace {
     struct Offer {
         bool isForSale;
-        address seller;
-        uint minValue;
+        address payable seller;
+        uint price;
     }
 
     struct Bid {
@@ -20,13 +20,19 @@ contract Marketplace {
     mapping (address => mapping(uint => Offer)) public offers;
     mapping (address => mapping(uint => Bid)) public bids;
 
-    function makeOffer(address erc721, uint tokenId, uint buyNow) public {
+    function makeOffer(address erc721, uint tokenId, uint price) public {
         require(IERC721(erc721).ownerOf(tokenId) == msg.sender, "You do not own this NFT.");
-        Offer memory offer = Offer(true, msg.sender, buyNow);
+        Offer memory offer = Offer(true, payable(msg.sender), price);
         offers[erc721][tokenId] = offer;
     }
 
     function takeOffer(address erc721, uint tokenId) public payable {
-        require(offers[erc721][tokenId].isForSale, "Token not for sale.");
+        Offer storage offer = offers[erc721][tokenId];
+        require(offer.isForSale, "Token not for sale.");
+        require(msg.value >= offer.price, "Insufficient payment.");
+        require(offer.seller != msg.sender, "Cannot take your own offer.");
+        (bool success, ) = offer.seller.call{value: msg.value}("");
+        require(success, "Transfer was unsuccessful.");
+        IERC721(erc721).safeTransferFrom(offer.seller, payable(msg.sender), tokenId);
     }
 }
