@@ -6,10 +6,14 @@ describe("Marketplace contract", function () {
   before(async function () {
     this.Marketplace = await ethers.getContractFactory('Marketplace');
     this.DummyNFT = await ethers.getContractFactory('DummyNFT');
+    this.Weth = await ethers.getContractFactory('Weth');
   });
 
   beforeEach(async function () {
-    marketplace = await this.Marketplace.deploy();
+    weth = await this.Weth.deploy(ethers.BigNumber.from(1000n * 10n**18n));
+    await weth.deployed();
+    this.weth = await ethers.getContractAt("Weth", weth.address);
+    marketplace = await this.Marketplace.deploy(weth.address);
     await marketplace.deployed();
     dummyNFT = await this.DummyNFT.deploy();
     await dummyNFT.deployed();
@@ -28,11 +32,15 @@ describe("Marketplace contract", function () {
     await expect(this.marketplace.makeOffer(this.dummyNFT.address, 1, 42)).to.be.reverted;
   });
 
+  it("should not make offer if 0 price", async function () {
+    this.marketplace = this.marketplace.connect(this.account1);
+    await expect(this.marketplace.makeOffer(this.dummyNFT.address, 1, 0)).to.be.reverted;
+  });
+
   it("should allow you to offer an NFT", async function () {
     this.marketplace = this.marketplace.connect(this.account1);
     await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("1"));
     let offer = await this.marketplace.offers(this.dummyNFT.address, 1);
-    expect(offer.isActive).to.equal(true);
     expect(offer.seller).to.equal(this.account1.address);
     expect(offer.price).to.equal(ethers.utils.parseEther("1"));
   });
@@ -42,7 +50,6 @@ describe("Marketplace contract", function () {
     await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("1"));
     await this.marketplace.makeOffer(this.dummyNFT.address, 1, ethers.utils.parseEther("2"));
     let offer = await this.marketplace.offers(this.dummyNFT.address, 1);
-    expect(offer.isActive).to.equal(true);
     expect(offer.seller).to.equal(this.account1.address);
     expect(offer.price).to.equal(ethers.utils.parseEther("2"));
   });
@@ -91,8 +98,12 @@ describe("Marketplace contract", function () {
     this.dummyNFT = this.dummyNFT.connect(this.account1);
     await this.dummyNFT.setApprovalForAll(this.marketplace.address, true);
     this.marketplace = this.marketplace.connect(this.account2);
+    let oldBalance = await ethers.provider.getBalance(this.account2.address);
     await this.marketplace.takeOffer(this.dummyNFT.address, 1, {value: ethers.utils.parseEther("1")});
     expect(await this.dummyNFT.ownerOf(1)).to.be.equal(this.account2.address);
+    let newBalance = await ethers.provider.getBalance(this.account2.address);
+    // Difference should be slightly greater because of gas
+    expect(oldBalance.sub(newBalance)).to.be.gt(ethers.utils.parseEther("1"));
   });
 
   it("should revert makeBid if bidding on your own NFT", async function () {
