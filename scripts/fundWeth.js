@@ -6,30 +6,40 @@ const {
 const deployedAddresses = require("../helpers/deployedAddress.json");
 
 async function main() {
-  let [account1, account2, account3] = await ethers.getSigners();
+  const signers = await ethers.getSigners();
+
+  const account1 = signers[3];
+  const account2 = signers[4];
+  const transferAmount = utils.parseEther("10");
+
   const weth = await ethers.getContractAt(
     "Weth",
     deployedAddresses.WrappedEther
   );
 
-  const tx = await weth.transfer(account2.address, utils.parseEther("10"));
+  const tx = await weth.transfer(account1.address, transferAmount);
   const reciept = await tx.wait();
   let transferEvent = reciept.events[0].args;
-
   console.log(
-    `Transferred ${utils.formatEther(transferEvent.value)} Weth from ${
+    `Funded ${utils.formatEther(transferEvent.value)} Weth from ${
       transferEvent.from
     } to ${transferEvent.to} `
   );
+  await weth
+    .connect(account1)
+    .approve(deployedAddresses.MarketPlace, transferAmount);
 
-  const tx1 = await weth.transfer(account3.address, utils.parseEther("10"));
+  const tx1 = await weth.transfer(account2.address, transferAmount);
   const reciept1 = await tx1.wait();
   transferEvent = reciept1.events[0].args;
   console.log(
-    `Transferred ${utils.formatEther(transferEvent.value)} Weth from ${
+    `Funded ${utils.formatEther(transferEvent.value)} Weth from ${
       transferEvent.from
     } to ${transferEvent.to} `
   );
+  await weth
+    .connect(account2)
+    .approve(deployedAddresses.MarketPlace, transferAmount);
 }
 
 main()
