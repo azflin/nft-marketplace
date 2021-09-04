@@ -221,6 +221,10 @@ describe("Marketplace contract", function () {
 
   it("should revert makeBid if bid is less than last bid", async function () {
     this.marketplace = this.marketplace.connect(this.account1);
+    await expect(
+      this.marketplace.makeBid(this.dummyNFT.address, 2, 0)
+    ).to.be.revertedWith("Bid must be greater than last bid.");
+
     await this.marketplace.makeBid(this.dummyNFT.address, 2, 2);
 
     await expect(
