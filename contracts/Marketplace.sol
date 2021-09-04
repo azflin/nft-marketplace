@@ -96,12 +96,8 @@ contract Marketplace {
             weth.allowance(msg.sender, address(this)) >= _bid,
             "You did not give allowance for marketplace to spend your WETH."
         );
-
         Bid storage bid = bids[_erc721][_tokenId];
-        (bid.price > 0)
-            ? require(_bid > bid.price, "Bid must be greater than last bid.")
-            : require(_bid > 0, "Bid must be > 0.");
-
+        require(_bid > bid.price, "Bid must be greater than last bid.");
         bid.bidder = msg.sender;
         bid.price = _bid;
         emit NewBid(msg.sender, _bid, _erc721, _tokenId);

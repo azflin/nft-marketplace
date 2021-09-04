@@ -219,12 +219,6 @@ describe("Marketplace contract", function () {
     ).to.be.revertedWith("You cannot bid on your own NFT.");
   });
 
-  it("should revert makeBid if bid is 0", async function () {
-    this.marketplace = this.marketplace.connect(this.account1);
-    await expect(
-      this.marketplace.makeBid(this.dummyNFT.address, 2, 0)
-    ).to.be.revertedWith("Bid must be > 0.");
-  });
   it("should revert makeBid if bid is less than last bid", async function () {
     this.marketplace = this.marketplace.connect(this.account1);
     await this.marketplace.makeBid(this.dummyNFT.address, 2, 2);
