@@ -14,7 +14,7 @@ async function main() {
     deployedAddresses.MarketPlace
   );
 
-  const bidAmount = utils.parseEther("0.512");
+  const bidAmount = utils.parseEther("0.51");
   const tx1 = await marketplace
     .connect(account1)
     .makeBid(deployedAddresses.DummyNFT, 1, bidAmount);
