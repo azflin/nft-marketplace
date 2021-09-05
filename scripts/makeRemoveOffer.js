@@ -6,9 +6,6 @@ const {
 const deployedAddresses = require("../helpers/deployedAddress.json");
 
 async function main() {
-  const signers = await ethers.getSigners();
-  let account1 = signers[3];
-  let account2 = signers[4];
   const marketplace = await ethers.getContractAt(
     "Marketplace",
     deployedAddresses.MarketPlace
@@ -18,6 +15,9 @@ async function main() {
     "DummyNFT",
     deployedAddresses.DummyNFT
   );
+
+  const signers = await ethers.getSigners();
+  let account1 = signers[1];
 
   const offerAmount = utils.parseEther("0.5");
   const tx1 = await marketplace
@@ -36,19 +36,17 @@ async function main() {
   await dummyNFT.connect(account1).approve(deployedAddresses.MarketPlace, 1);
 
   const tx2 = await marketplace
-    .connect(account2)
-    .makeOffer(deployedAddresses.DummyNFT, 2, offerAmount);
+    .connect(account1)
+    .removeOffer(deployedAddresses.DummyNFT, 1);
   const reciept2 = await tx2.wait();
   let newBidEvent2 = reciept2.events[0].args;
 
   console.log(
-    `New offer of ${utils.formatEther(newBidEvent2.price)}Weth recieved for ${
+    `Offer removed for tokenId ${newBidEvent2.tokenId.toNumber()} of contract address ${
       newBidEvent2.erc721
-    } with tokenId ${newBidEvent2.tokenId.toNumber()}  from ${
-      newBidEvent2.seller
-    }`
+    } 
+    `
   );
-  await dummyNFT.connect(account2).approve(deployedAddresses.MarketPlace, 2);
 }
 
 main()

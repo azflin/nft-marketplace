@@ -17,6 +17,7 @@ async function main() {
   const reciept = await tx.wait();
   let tokenId = reciept.events[0].args.tokenId.toNumber();
   console.log(`Token Id ${tokenId} minted for ${account1.address}`);
+  // Approve marketplace to transfer this NFT
   await dummyNFT
     .connect(account1)
     .approve(deployedAddresses.MarketPlace, tokenId);
@@ -25,6 +26,7 @@ async function main() {
   const reciept1 = await tx1.wait();
   tokenId = reciept1.events[0].args.tokenId.toNumber();
   console.log(`Token Id ${tokenId} minted for ${account2.address}`);
+  // Approve marketplace to transfer this NFT
   await dummyNFT
     .connect(account2)
     .approve(deployedAddresses.MarketPlace, tokenId);
