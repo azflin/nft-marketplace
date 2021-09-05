@@ -21,6 +21,7 @@ contract Marketplace {
 
     event NewBid(
         address indexed bidder,
+        address indexed owner,
         uint256 price,
         address indexed erc721,
         uint256 tokenId
@@ -88,10 +89,8 @@ contract Marketplace {
         uint256 _tokenId,
         uint256 _bid
     ) public {
-        require(
-            IERC721(_erc721).ownerOf(_tokenId) != msg.sender,
-            "You cannot bid on your own NFT."
-        );
+        address owner = IERC721(_erc721).ownerOf(_tokenId);
+        require(owner != msg.sender, "You cannot bid on your own NFT.");
         require(
             weth.allowance(msg.sender, address(this)) >= _bid,
             "You did not give allowance for marketplace to spend your WETH."
@@ -100,7 +99,7 @@ contract Marketplace {
         require(_bid > bid.price, "Bid must be greater than last bid.");
         bid.bidder = msg.sender;
         bid.price = _bid;
-        emit NewBid(msg.sender, _bid, _erc721, _tokenId);
+        emit NewBid(msg.sender, owner, _bid, _erc721, _tokenId);
     }
 
     function takeBid(address _erc721, uint256 _tokenId) public {
@@ -135,8 +134,9 @@ contract Marketplace {
     function removeBid(address _erc721, uint256 _tokenId) public {
         Bid storage bid = bids[_erc721][_tokenId];
         require(bid.bidder == msg.sender, "You are not the bidder.");
+        address owner = IERC721(_erc721).ownerOf(_tokenId);
         bid.price = 0;
         bid.bidder = payable(address(0));
-        emit NewBid(address(0), 0, _erc721, _tokenId);
+        emit NewBid(address(0), owner, 0, _erc721, _tokenId);
     }
 }

@@ -259,6 +259,7 @@ describe("Marketplace contract", function () {
       .to.emit(this.marketplace, "NewBid")
       .withArgs(
         this.account1.address,
+        this.account2.address,
         ethers.utils.parseEther("1"),
         this.dummyNFT.address,
         2
@@ -387,7 +388,13 @@ describe("Marketplace contract", function () {
     );
     await expect(this.marketplace.removeBid(this.dummyNFT.address, 2))
       .to.emit(this.marketplace, "NewBid")
-      .withArgs(ethers.constants.AddressZero, 0, this.dummyNFT.address, 2);
+      .withArgs(
+        ethers.constants.AddressZero,
+        this.account2.address,
+        0,
+        this.dummyNFT.address,
+        2
+      );
     let bid = await this.marketplace.bids(this.dummyNFT.address, 2);
     expect(bid.bidder).to.be.equal(ethers.constants.AddressZero);
     expect(bid.price).to.be.equal(0);

@@ -31,13 +31,13 @@ const contract = new ethers.Contract(
   // TODO: Remove this on production.
   await emptyDatabase();
 
-  contract.on("NewBid", async (bidder, price, erc721, tokenId) => {
+  contract.on("NewBid", async (bidder, owner, price, erc721, tokenId) => {
     price = ethers.utils.formatEther(price);
 
     try {
       await NFTCollection.findOneAndUpdate(
         { contractAddress: erc721, tokenId },
-        { bidder, bidPrice: price },
+        { bidder, bidPrice: price, seller: owner },
         { upsert: true, new: true }
       );
     } catch (err) {
