@@ -55,7 +55,7 @@ const contract = new ethers.Contract(
     try {
       await NFTCollection.findOneAndUpdate(
         { contractAddress: erc721, tokenId },
-        { bidder: "", seller: "", bidPrice: "", offerPrice: "" },
+        { bidder: null, seller: null, bidPrice: null, offerPrice: null },
         { upsert: true, new: true }
       );
     } catch (err) {
@@ -75,7 +75,7 @@ const contract = new ethers.Contract(
     try {
       await NFTCollection.findOneAndUpdate(
         { contractAddress: erc721, tokenId },
-        { bidder: "", seller, offerPrice: price },
+        { bidder: null, seller, offerPrice: price },
         { upsert: true, new: true }
       );
     } catch (err) {

@@ -21,7 +21,7 @@ const NFTCollectionSchema = new mongoose.Schema(
       type: Number,
     },
   },
-  { timestamps: { currentTime: () => Math.floor(Date.now() / 1000) } }
+  { timestamps: true }
 );
 
 module.exports =
