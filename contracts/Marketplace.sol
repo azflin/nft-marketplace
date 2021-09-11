@@ -3,9 +3,10 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
 
-contract Marketplace {
+contract Marketplace is Ownable {
     struct Offer {
         address payable seller;
         uint256 price;
@@ -138,5 +139,12 @@ contract Marketplace {
         bid.price = 0;
         bid.bidder = payable(address(0));
         emit NewBid(address(0), owner, 0, _erc721, _tokenId);
+    }
+
+    function withdraw() public onlyOwner {
+        uint amount = address(this).balance;
+        (bool sent, ) = msg.sender.call{value: amount}("");
+        require(sent, "Failed to send Ether");
+        weth.transfer(msg.sender, weth.balanceOf(address(this)));
     }
 }
