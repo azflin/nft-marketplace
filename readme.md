@@ -1,7 +1,7 @@
-# Smart contract and backend for NFT marketplace
+# NFT Marketplace (Smart contract + backend)
+The solidity smart contract and MongoDB backend for https://www.skellynft.com/#/.
 
-
-## TESTING
+## Testing for Backend
 
 ___RUN Scripts in this order to see how database updates___
 
