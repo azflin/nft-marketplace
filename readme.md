@@ -1,4 +1,4 @@
-# NFT Marketplace (Smart contract + backend)
+# Skelly NFT Marketplace (Smart contract + backend)
 The solidity smart contract and MongoDB backend for https://www.skellynft.com/#/.
 
 ## Testing for Backend
